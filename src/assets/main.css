@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- DESIGN SYSTEM COLOR VARIABLES --- */
+:root {
+  --color-surface: #f8f9ff;
+  --color-surface-dim: #d0dbed;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container: #e6eeff;
+  --color-surface-container-high: #dee9fc;
+  --color-surface-container-highest: #d9e3f6;
+  --color-on-surface: #121c2a;
+  --color-on-surface-variant: #554336;
+  --color-inverse-surface: #27313f;
+  --color-inverse-on-surface: #eaf1ff;
+  --color-outline: #887364;
+  --color-outline-variant: #dbc2b0;
+  --color-surface-tint: #904d00;
+  --color-primary: #8d4b00;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #b15f00;
+  --color-on-primary-container: #fffbff;
+  --color-inverse-primary: #ffb77d;
+  --color-secondary: #855300;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fea619;
+  --color-on-secondary-container: #684000;
+  --color-tertiary: #665f3d;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #b5ac84;
+  --color-on-tertiary-container: #464021;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-primary-fixed: #ffdcc3;
+  --color-primary-fixed-dim: #ffb77d;
+  --color-on-primary-fixed: #2f1500;
+  --color-on-primary-fixed-variant: #6e3900;
+  --color-secondary-fixed: #ffddb8;
+  --color-secondary-fixed-dim: #ffb95f;
+  --color-on-secondary-fixed: #2a1700;
+  --color-on-secondary-fixed-variant: #653e00;
+  --color-tertiary-fixed: #ede3b8;
+  --color-tertiary-fixed-dim: #d1c79d;
+  --color-on-tertiary-fixed: #201c02;
+  --color-on-tertiary-fixed-variant: #4d4727;
+  --color-background: #f8f9ff;
+  --color-on-background: #121c2a;
+  --color-surface-variant: #d9e3f6;
+}
+
+/* --- CUSTOM COMPONENT UTILITIES --- */
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(144, 77, 0, 0.1);
+  }
+
+  .glow-hover {
+    transition: all 0.3s ease;
+  }
+  .glow-hover:hover {
+    box-shadow: 0 0 30px rgba(254, 166, 25, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .ethereal-bg {
+    background: radial-gradient(circle at top right, rgba(144, 77, 0, 0.05), transparent),
+                radial-gradient(circle at bottom left, rgba(177, 95, 0, 0.03), transparent);
+  }
+}
+
+/* Material Symbols Icon Configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+button:active {
+  opacity: 0.8;
+}
+input, select {
+  transition: all 0.2s ease-in-out;
+}
+input:focus, select:focus {
+  border-color: var(--color-secondary) !important;
+}
+
+/* Ethereal glow for event cards */
+.ethereal-glow {
+  box-shadow: 0 20px 40px rgba(144, 77, 0, 0.05);
+  transition: all 0.3s ease;
+}
+.ethereal-glow:hover {
+  box-shadow: 0 25px 50px rgba(133, 83, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+/* Faded rule separator line */
+.faded-rule {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(144, 77, 0, 0.2), transparent);
+}
+
+/* Minimal input style for contact page */
+.input-minimal {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #8d4b00;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+  transition: all 0.3s ease;
+}
+
+.input-minimal:focus {
+  outline: none;
+  box-shadow: none;
+  border-bottom-color: #fea619;
+}
