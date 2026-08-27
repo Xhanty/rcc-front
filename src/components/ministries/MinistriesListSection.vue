@@ -45,13 +45,10 @@ const ministries: Ministry[] = [
     <div class="max-w-max-width mx-auto px-6 md:px-margin-desktop">
       <!-- Grid of Ministries -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-        
+
         <!-- Loop through ministries -->
-        <div 
-          v-for="min in ministries" 
-          :key="min.id" 
-          class="glass-card p-6 md:p-8 rounded-xl flex flex-col hover-glow transition-all duration-300"
-        >
+        <div v-for="min in ministries" :key="min.id"
+          class="glass-card p-6 md:p-8 rounded-xl flex flex-col hover-glow transition-all duration-300">
           <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-base">
             <span class="material-symbols-outlined text-primary text-3xl">{{ min.icon }}</span>
           </div>
@@ -62,22 +59,27 @@ const ministries: Ministry[] = [
             {{ min.desc }}
           </p>
           <div class="fade-rule mb-base"></div>
-          <button class="flex items-center gap-2 font-label-sm text-label-sm text-secondary group uppercase cursor-pointer active:opacity-80">
-            Saber más 
-            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <button
+            class="flex items-center gap-2 font-label-sm text-label-sm text-secondary group uppercase cursor-pointer active:opacity-80">
+            Saber más
+            <span
+              class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
           </button>
         </div>
 
         <!-- Call to Action Card -->
-        <div class="bg-primary p-6 md:p-8 rounded-xl flex flex-col justify-center items-center text-center shadow-lg transform md:translate-y-4">
-          <span class="material-symbols-outlined text-secondary-fixed text-4xl mb-base" data-weight="fill">volunteer_activism</span>
+        <div
+          class="bg-primary p-6 md:p-8 rounded-xl flex flex-col justify-center items-center text-center shadow-lg transform md:translate-y-4">
+          <span class="material-symbols-outlined text-secondary-fixed text-4xl mb-base"
+            data-weight="fill">volunteer_activism</span>
           <h3 class="font-headline-lg text-title-md md:text-headline-lg text-on-primary mb-base leading-tight">
             ¿Sientes el llamado?
           </h3>
-          <p class="font-body-md text-body-md text-on-primary/80 mb-base">
+          <p class="font-body-md text-body-md text-on-primary mb-base">
             Hay un lugar para ti en nuestra comunidad. Descubre tus carismas y ponlos al servicio de Dios.
           </p>
-          <button class="w-full bg-secondary text-on-secondary font-label-sm text-label-sm py-3 rounded-lg hover:bg-secondary-container transition-colors active:scale-95 duration-200 uppercase cursor-pointer">
+          <button
+            class="w-full bg-secondary-container text-on-secondary font-label-sm text-label-sm py-3 rounded-lg hover:bg-secondary-container transition-colors active:scale-95 duration-200 uppercase cursor-pointer">
             Unirme a un ministerio
           </button>
         </div>

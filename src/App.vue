@@ -11,7 +11,6 @@ import HeroSection from './components/home/HeroSection.vue'
 import WelcomeSection from './components/home/WelcomeSection.vue'
 import EventsSection from './components/home/EventsSection.vue'
 import MinistriesSection from './components/home/MinistriesSection.vue'
-import NewsletterCta from './components/home/NewsletterCta.vue'
 
 // Import About Page specific components
 import AboutHeroSection from './components/about/AboutHeroSection.vue'
@@ -81,9 +80,6 @@ const currentPage = computed(() => {
 
           <!-- Ministerios / Ministries -->
           <MinistriesSection />
-
-          <!-- Boletín / Newsletter CTA -->
-          <NewsletterCta />
         </div>
 
         <!-- About Us View -->
