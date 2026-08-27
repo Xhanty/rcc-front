@@ -14,14 +14,14 @@ const handleFormSubmit = async () => {
     formError.value = 'Todos los campos son obligatorios.'
     return
   }
-  
+
   isLoading.value = true
   formError.value = ''
-  
+
   try {
     const url = `${import.meta.env.VITE_API_URL}contacts`
     const key = import.meta.env.VITE_API_KEY
-    
+
     if (!url || !key) {
       throw new Error('API config is missing')
     }
@@ -106,7 +106,8 @@ const resetForm = () => {
                   class="input-minimal font-body-md py-2 appearance-none bg-transparent text-on-surface cursor-pointer">
                   <option value="Información General" class="bg-surface text-on-surface">Información General</option>
                   <option value="Petición de Oración" class="bg-surface text-on-surface">Petición de Oración</option>
-                  <option value="Pregunta sobre Ministerios" class="bg-surface text-on-surface">Pregunta sobre Ministerios</option>
+                  <option value="Pregunta sobre Ministerios" class="bg-surface text-on-surface">Pregunta sobre
+                    Ministerios</option>
                   <option value="Eventos y Retiros" class="bg-surface text-on-surface">Eventos y Retiros</option>
                 </select>
               </div>
@@ -120,7 +121,8 @@ const resetForm = () => {
 
               <!-- Error message alert box -->
               <transition name="fade">
-                <div v-if="formError" class="p-4 bg-error/10 border border-error/20 text-error rounded-xl flex items-center gap-2 font-body-md">
+                <div v-if="formError"
+                  class="p-4 bg-error/10 border border-error/20 text-error rounded-xl flex items-center gap-2 font-body-md">
                   <span class="material-symbols-outlined text-xl">error</span>
                   <span>{{ formError }}</span>
                 </div>
@@ -157,39 +159,21 @@ const resetForm = () => {
 
       <!-- Schedule & Details Section (Col span 5) -->
       <div class="lg:col-span-5 space-y-6 flex flex-col justify-between">
-        <!-- Schedule Card -->
-        <div class="glass-card rounded-xl p-6 md:p-8 border-l-4 border-secondary-container flex-grow">
-          <div class="flex items-center gap-2 mb-6 text-primary">
-            <span class="material-symbols-outlined">schedule</span>
-            <h3 class="font-title-md text-title-md">Horarios de Gracia</h3>
+        <!-- Welcome Message Card -->
+        <div
+          class="glass-card rounded-xl p-6 md:p-8 border-l-4 border-secondary-container flex-grow flex flex-col justify-center">
+          <div class="flex items-center gap-2 mb-4 text-primary">
+            <span class="material-symbols-outlined text-2xl">favorite</span>
+            <h3 class="font-title-md text-title-md">Nuestra Misión</h3>
           </div>
-          <div class="space-y-6">
-            <div class="flex justify-between items-start border-b border-outline-variant pb-4">
-              <div>
-                <p class="font-bold text-primary">Asamblea Carismática</p>
-                <p class="text-label-sm text-on-surface-variant mt-0.5">Alabanza, oración y enseñanza</p>
-              </div>
-              <span
-                class="text-label-sm bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-lg flex-shrink-0">Jueves
-                19:30</span>
-            </div>
-            <div class="flex justify-between items-start border-b border-outline-variant pb-4">
-              <div>
-                <p class="font-bold text-primary">Misa de la Comunidad</p>
-                <p class="text-label-sm text-on-surface-variant mt-0.5">Solemne Eucaristía</p>
-              </div>
-              <span
-                class="text-label-sm bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-lg flex-shrink-0">Domingo
-                11:00</span>
-            </div>
-            <div class="flex justify-between items-start">
-              <div>
-                <p class="font-bold text-primary">Cenáculo de Jóvenes</p>
-                <p class="text-label-sm text-on-surface-variant mt-0.5">Grupo de oración juvenil</p>
-              </div>
-              <span
-                class="text-label-sm bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-lg flex-shrink-0">Sábado
-                17:00</span>
+          <div class="space-y-4">
+            <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              En la <strong>Comunidad Resucitados RCC</strong>, nos unimos para vivir y proclamar el poder del
+              Resucitado, llevando esperanza y restauración a cada rincón encendidos por el Espíritu Santo.
+            </p>
+            <div class="italic text-primary font-headline-lg text-body-md text-center pt-2">
+              "Donde dos o tres están reunidos en mi nombre, allí estoy yo en medio de ellos." <br />
+              <span class="font-bold text-secondary text-sm block mt-1">- Mateo 18:20</span>
             </div>
           </div>
         </div>
@@ -207,11 +191,11 @@ const resetForm = () => {
               Abrir en Google Maps
             </a>
           </div>
-          <div
-            class="absolute bottom-4 left-4 backdrop-blur-md p-3 rounded border border-primary/10 max-w-[85%]"
+          <div class="absolute bottom-4 left-4 backdrop-blur-md p-3 rounded border border-primary/10 max-w-[85%]"
             style="background-color: rgba(248, 249, 255, 0.9)">
             <p class="text-label-sm font-bold text-primary">Nuestra Sede</p>
-            <p class="text-label-sm text-on-surface-variant mt-0.5">Calle de la Luz 123, Ciudad de Fe, CP 28001</p>
+            <p class="text-label-sm text-on-surface-variant mt-0.5">Calle 60 #50-16
+              (Casa Palotinos) - Medellín</p>
           </div>
         </div>
       </div>
