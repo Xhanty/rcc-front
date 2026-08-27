@@ -71,10 +71,10 @@ const closeMobileMenu = () => {
       </nav>
 
       <!-- Desktop Join Action -->
-      <button
+      <!-- <button
         class="hidden min-[900px]:block bg-primary text-on-primary px-8 py-2 rounded-full font-body-md text-body-md hover:bg-primary-container transition-all active:scale-95 duration-200 cursor-pointer">
         Únete
-      </button>
+      </button> -->
 
       <!-- Mobile Hamburger Button -->
       <button @click="toggleMobileMenu"
@@ -124,10 +124,10 @@ const closeMobileMenu = () => {
 
           <div class="h-[1px] bg-outline-variant/30 my-2"></div>
 
-          <button @click="closeMobileMenu"
+          <!-- <button @click="closeMobileMenu"
             class="w-full bg-primary text-on-primary py-3 rounded-full font-body-md text-body-md hover:bg-primary-container transition-all active:scale-95 cursor-pointer">
             Únete
-          </button>
+          </button> -->
         </div>
       </div>
     </transition>
