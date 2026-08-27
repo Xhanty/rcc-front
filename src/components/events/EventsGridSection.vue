@@ -1,218 +1,173 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const props = defineProps<{
-  selectedMonth: string
+  selectedYear: number | null
+  selectedMonth: number | null
 }>()
 
 interface EventItem {
   id: number
   title: string
   slug: string
-  month: 'Octubre' | 'Noviembre' | 'Diciembre'
   dateLabel: string
   desc: string
   time: string
   location: string
   imageUrl: string
-  isFeatured?: boolean
+  day?: string
+  monthShort?: string
 }
 
-const allEvents: EventItem[] = [
-  {
-    id: 1,
-    title: 'Gran Asamblea',
-    slug: 'gran-asamblea-rcc-2026',
-    month: 'Octubre',
-    dateLabel: '15 de Octubre, 2024 • 19:00 PM',
-    desc: 'Únete a nosotros en una noche de alabanza poderosa, testimonios y la Palabra que transforma corazones.',
-    time: '19:00 PM',
-    location: 'Capilla Principal',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_ihLQcKpJNRBH7qWDNZNiDKpCCq5yCS10xN_wPyrqTt8NmGYGoFc6ggaVYaylVfvigPlmpJTdzvQUhml8fkTlzIcdl_coKiE1V9xrl3k9oxFZRLvbAUNX7qB3-_tq8k8XeWatnACV26ph_h2I-5Wd3UH5Dm3vQI9MbVFgeFtFT7Lt4bukEYVg_dAFJUtKY7DyHVqklbLtUHsazteOZjszWOs5AA0z4lJGo-Fc-We-84G8IgA43BhF56gjG5sdLztS-NaOwsET3GOA',
-    isFeatured: true
-  },
-  {
-    id: 2,
-    title: 'Retiro de Sanación',
-    slug: 'retiro-de-sanacion',
-    month: 'Octubre',
-    dateLabel: '28-30 de Octubre',
-    desc: 'Un fin de semana dedicado al descanso del alma y la restauración interior en presencia del Espíritu Santo.',
-    time: 'Todo el día',
-    location: 'Centro de Retiros',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfMlq9shhdrK3jdV7uhlKAaOT6Fk3Vo_Sx82IXSRzkSjmfEPTHXRdOzB6hpluvtSKdspI4fEL6SQC18G_sqa5UzgDCVO1RsBcOCidS2gSTJYLtTbqn2YiIJXo6QqyVDQenog5WRVbYMyssveOFFhSX8anjXoJRjod1LFF8eWjUidEqsqmWSeCLTFiqQxpS6ZJbBCMRUDnHvCmxRM4yNodzb0qTXp4cCA3pSonFpZX6jhqPOMKJekssZiLkowaMLHklHbmzx--y5jAf'
-  },
-  {
-    id: 3,
-    title: 'Seminario de Vida',
-    slug: 'seminario-de-vida',
-    month: 'Noviembre',
-    dateLabel: 'Cada Jueves de Noviembre',
-    desc: 'Descubre los carismas y profundiza en tu relación personal con Dios a través de este seminario formativo.',
-    time: '20:00 PM',
-    location: 'Salón Comunal',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD4rfsmY9pV22NXGlbZJ5GxVaHQh2Aqsnpaq9wSbyLMg0I7anXC9JZIGx4yV37Ld4OxDrJzMste5B58r6ZOOcNPERQyhYxV2WF4vB-LuEd8tf0yo4yn8gXxOLnVW9Bl5p-O2XvGrrU63AYfcTlpxrk2Ozw1ks2vXrZ-zcgH1dTZE7rN1hEoLE9zJM086byqH-9wGucFr6nfSQEwQ-LnlftjOpLhgNa-m6vAcHgZvtK6DQ6OMeOhFdEX8P0rp2Js7AUXJmPYao5XuR3n'
-  }
+const events = ref<EventItem[]>([])
+const isLoading = ref(true)
+const hasError = ref(false)
+
+const monthShortNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+const monthNames = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ]
 
-interface OtherMeeting {
-  id: number
-  title: string
-  monthShort: string
-  monthFull: 'Octubre' | 'Noviembre' | 'Diciembre'
-  day: string
-  location: string
-  time: string
+const fetchEvents = async () => {
+  if (props.selectedYear === null || props.selectedMonth === null) return
+
+  isLoading.value = true
+  hasError.value = false
+
+  try {
+    const url = `${import.meta.env.VITE_API_URL}configuration/events/filter?year=${props.selectedYear}&month=${props.selectedMonth}`
+    const key = import.meta.env.VITE_API_KEY
+
+    if (!url || !key) {
+      throw new Error('API config missing')
+    }
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-API-KEY': key
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch filtered events')
+    }
+
+    const resJson = await response.json()
+    const rawEvents = resJson.data || []
+
+    events.value = rawEvents.map((item: any) => {
+      // Expected format: start_date is "15/09/2026"
+      const dateParts = item.start_date ? item.start_date.split('/') : []
+      const day = dateParts[0] || '01'
+      const monthNum = parseInt(dateParts[1]) || 1
+      const monthShort = monthShortNames[monthNum - 1] || 'Ene'
+
+      const dateLabel = `${day} de ${monthNames[monthNum - 1] || 'Enero'}, ${dateParts[2] || '2026'} • ${item.start_time || 'Por confirmar'}`
+
+      return {
+        id: item.id,
+        title: item.name || item.title || 'Sin título',
+        slug: item.slug || '',
+        dateLabel,
+        desc: item.description || item.short_description || 'Sin descripción',
+        time: item.start_time || 'Por confirmar',
+        location: item.venue_name || (item.modality === 'virtual' ? 'Virtual' : 'Medellín'),
+        imageUrl: item.image || item.banner_image_url || '',
+        day,
+        monthShort
+      }
+    })
+    isLoading.value = false
+  } catch (error) {
+    console.error('Error fetching filtered events:', error)
+    hasError.value = true
+    events.value = []
+    isLoading.value = false
+  }
 }
 
-const otherMeetings: OtherMeeting[] = [
-  {
-    id: 1,
-    title: 'Cena de Comunidad',
-    monthShort: 'Nov',
-    monthFull: 'Noviembre',
-    day: '12',
-    location: 'Centro Pastoral',
-    time: '20:00 PM'
-  },
-  {
-    id: 2,
-    title: 'Vigilia de la Inmaculada',
-    monthShort: 'Dic',
-    monthFull: 'Diciembre',
-    day: '08',
-    location: 'Capilla Principal',
-    time: '22:00 PM'
-  },
-  {
-    id: 3,
-    title: 'Misa de Gallo',
-    monthShort: 'Dic',
-    monthFull: 'Diciembre',
-    day: '24',
-    location: 'Templo Mayor',
-    time: '00:00 AM'
-  }
-]
-
-// Reactive Filtering Computeds
-const filteredFeaturedEvent = computed(() => {
-  if (props.selectedMonth !== 'Todos' && props.selectedMonth !== 'Octubre') return null
-  return allEvents.find(e => e.isFeatured) || null
+onMounted(() => {
+  fetchEvents()
 })
 
-const filteredSecondaryEvents = computed(() => {
-  return allEvents.filter(e => {
-    if (e.isFeatured) return false
-    return props.selectedMonth === 'Todos' || e.month === props.selectedMonth
-  })
-})
-
-const filteredOtherMeetings = computed(() => {
-  return otherMeetings.filter(e => {
-    return props.selectedMonth === 'Todos' || e.monthFull === props.selectedMonth
-  })
+watch(() => [props.selectedYear, props.selectedMonth], () => {
+  fetchEvents()
 })
 
 const hasVisibleEvents = computed(() => {
-  return filteredFeaturedEvent.value !== null ||
-    filteredSecondaryEvents.value.length > 0 ||
-    filteredOtherMeetings.value.length > 0
+  return events.value.length > 0
 })
 </script>
 
 <template>
   <section class="px-6 max-w-max-width mx-auto pb-20 z-10 relative">
     <transition name="fade" mode="out-in">
-      <div v-if="hasVisibleEvents" class="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-        <!-- Main Featured Event (Col span 2) -->
-        <div v-if="filteredFeaturedEvent"
-          class="lg:col-span-2 group relative rounded-xl overflow-hidden glass-card ethereal-glow flex flex-col justify-between">
-          <div class="aspect-video relative overflow-hidden flex-grow min-h-[250px]">
-            <img :alt="filteredFeaturedEvent.title"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              :src="filteredFeaturedEvent.imageUrl" />
-            <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
-            <div class="absolute bottom-0 left-0 p-6 md:p-10 text-white">
-              <span
-                class="inline-block px-4 py-1 bg-secondary text-on-secondary-fixed rounded-full text-xs font-bold mb-4">Evento
-                Principal</span>
-              <h2 class="font-headline-lg text-headline-lg mb-2 leading-tight">
-                {{ filteredFeaturedEvent.title }}
-              </h2>
-              <p class="font-body-md text-body-md flex items-center gap-2 opacity-90">
-                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
-                {{ filteredFeaturedEvent.dateLabel }}
+      <!-- Loading State (2 Skeletons per row) -->
+      <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div v-for="n in 2" :key="n"
+          class="bg-white rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(141,75,0,0.03)] border border-outline-variant/30 animate-pulse h-[400px] flex flex-col justify-between">
+          <div class="h-48 bg-surface-container-highest"></div>
+          <div class="p-6 space-y-4 flex-grow">
+            <div class="h-6 bg-surface-container-highest rounded w-3/4"></div>
+            <div class="h-4 bg-surface-container-highest rounded w-1/2 mt-3"></div>
+            <div class="h-4 bg-surface-container-highest rounded w-full mt-4"></div>
+          </div>
+          <div class="px-6 pb-6">
+            <div class="h-10 bg-surface-container-highest rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loaded Events Grid (2 columns) -->
+      <div v-else-if="hasVisibleEvents" class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
+        <div v-for="event in events" :key="event.id"
+          class="group bg-white rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(141,75,0,0.03)] border border-outline-variant/30 hover:border-secondary/30 transition-all duration-500 flex flex-col justify-between">
+
+          <div>
+            <!-- Card Image & Date Badge -->
+            <div class="h-48 overflow-hidden relative">
+              <img :alt="event.title"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                :src="event.imageUrl" />
+              <div
+                class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-center min-w-[60px]">
+                <p class="text-xs font-bold text-secondary uppercase leading-none">{{ event.monthShort }}</p>
+                <p class="text-xl font-bold text-primary mt-1">{{ event.day }}</p>
+              </div>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-6 md:p-8">
+              <h3 class="font-headline-lg text-title-md md:text-headline-lg text-primary mb-2 leading-tight">
+                {{ event.title }}
+              </h3>
+              <p class="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed">
+                {{ event.desc }}
               </p>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-on-surface-variant font-label-sm">
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base">schedule</span> {{ event.time }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base">location_on</span> {{ event.location }}
+                </span>
+              </div>
             </div>
           </div>
-          <div class="p-6 md:p-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-base">
-            <p class="font-body-md text-body-md text-on-surface-variant max-w-md">
-              {{ filteredFeaturedEvent.desc }}
-            </p>
-            <a :href="'#events/' + filteredFeaturedEvent.slug"
-              class="bg-primary text-on-primary px-8 py-3 rounded-xl font-title-md shadow-lg active:scale-95 transition-all mt-4 md:mt-0 cursor-pointer block text-center">
+
+          <!-- Card Action Button -->
+          <div class="px-6 md:px-8 pb-6 md:pb-8">
+            <a :href="'#events/' + event.slug"
+              class="w-full text-center border border-primary/20 text-primary py-2.5 rounded-lg font-body-md hover:bg-primary hover:text-white transition-all active:opacity-80 block cursor-pointer">
               Ver Detalles
             </a>
           </div>
-        </div>
 
-        <!-- Secondary Cards -->
-        <div v-for="event in filteredSecondaryEvents" :key="event.id"
-          class="group glass-card ethereal-glow rounded-xl flex flex-col justify-between">
-          <div class="aspect-[4/3] relative overflow-hidden rounded-t-xl min-h-[180px]">
-            <img :alt="event.title"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              :src="event.imageUrl" />
-          </div>
-          <div class="p-6 md:p-8 flex flex-col flex-grow">
-            <h3 class="font-headline-lg text-title-md md:text-headline-lg text-primary mb-2 leading-tight">
-              {{ event.title }}
-            </h3>
-            <p class="font-label-sm text-label-sm text-secondary mb-4 uppercase tracking-widest">{{ event.dateLabel }}
-            </p>
-            <p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">
-              {{ event.desc }}
-            </p>
-            <div class="mt-auto pt-4 faded-rule">
-              <a :href="'#events/' + event.slug"
-                class="w-full mt-2 border border-secondary text-secondary py-3 rounded-xl font-title-md hover:bg-secondary/5 transition-all cursor-pointer active:scale-95 block text-center">
-                Ver Detalles
-              </a>
-            </div>
-          </div>
         </div>
-
-        <!-- Other Events List (Col span 2) -->
-        <div v-if="filteredOtherMeetings.length > 0"
-          :class="['glass-card ethereal-glow rounded-xl p-6 md:p-10', { 'lg:col-span-2': filteredSecondaryEvents.length % 2 === 0 }]">
-          <div class="flex justify-between items-center mb-8">
-            <h3 class="font-headline-lg text-headline-lg text-primary">Otros Encuentros</h3>
-            <a class="font-body-md text-body-md text-secondary hover:underline" href="#">Ver calendario completo</a>
-          </div>
-          <div class="space-y-4">
-            <div v-for="(meeting, index) in filteredOtherMeetings" :key="meeting.id"
-              :class="['flex items-center justify-between py-6', { 'faded-rule': index !== filteredOtherMeetings.length - 1 }]">
-              <div class="flex items-center gap-6">
-                <!-- Date column -->
-                <div
-                  class="w-14 h-14 flex flex-col items-center justify-center bg-surface-container-high text-primary rounded-xl flex-shrink-0">
-                  <span class="text-[10px] font-bold uppercase leading-none">{{ meeting.monthShort }}</span>
-                  <span class="text-xl font-bold leading-none mt-1">{{ meeting.day }}</span>
-                </div>
-                <div>
-                  <h4 class="font-title-md text-title-md text-on-surface leading-tight">{{ meeting.title }}</h4>
-                  <p class="font-body-md text-on-surface-variant mt-1">{{ meeting.location }} • {{ meeting.time }}</p>
-                </div>
-              </div>
-              <button class="text-secondary hover:text-primary transition-colors cursor-pointer">
-                <span class="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <!-- Empty State -->
@@ -220,13 +175,9 @@ const hasVisibleEvents = computed(() => {
         <span class="material-symbols-outlined text-secondary text-5xl animate-pulse">event_busy</span>
         <h3 class="font-headline-lg text-headline-lg text-primary mt-4">Sin Eventos</h3>
         <p class="font-body-md text-body-md text-on-surface-variant mt-2">
-          No hay eventos programados para el mes de {{ selectedMonth }}. Te invitamos a revisar los otros meses del
-          calendario.
+          No hay eventos programados para el mes de {{ selectedMonth ? monthNames[selectedMonth - 1] : 'este mes' }}. Te
+          invitamos a revisar los otros meses del calendario.
         </p>
-        <button @click="$emit('reset-filter')"
-          class="mt-6 bg-primary text-on-primary px-8 py-2 rounded-full font-body-md hover:bg-primary-container transition-all active:scale-95 cursor-pointer">
-          Ver Todo
-        </button>
       </div>
     </transition>
   </section>

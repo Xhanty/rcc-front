@@ -34,11 +34,13 @@ import ContactFormSection from './components/contact/ContactFormSection.vue'
 import ContactBentoSection from './components/contact/ContactBentoSection.vue'
 
 const currentHash = ref(window.location.hash)
-const selectedMonth = ref('Todos')
+const selectedYear = ref<number | null>(null)
+const selectedMonth = ref<number | null>(null)
 
 const handleHashChange = () => {
   currentHash.value = window.location.hash
-  selectedMonth.value = 'Todos' // Reset filter on navigation
+  selectedYear.value = null
+  selectedMonth.value = null
   // Scroll to top when page changes
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -121,10 +123,16 @@ const currentSlug = computed(() => {
         <!-- Events View -->
         <div v-else-if="currentPage === 'events'" key="events">
           <!-- Events Hero Section -->
-          <EventsHeroSection v-model:selectedMonth="selectedMonth" />
+          <EventsHeroSection 
+            v-model:selectedYear="selectedYear" 
+            v-model:selectedMonth="selectedMonth" 
+          />
 
           <!-- Events Grid Section -->
-          <EventsGridSection :selectedMonth="selectedMonth" @reset-filter="selectedMonth = 'Todos'" />
+          <EventsGridSection 
+            :selectedYear="selectedYear" 
+            :selectedMonth="selectedMonth" 
+          />
         </div>
 
         <!-- Event Detail View -->
