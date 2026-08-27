@@ -186,7 +186,7 @@ const resetForm = () => {
           <div
             class="absolute inset-0 bg-primary/10 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <a class="bg-surface px-6 py-2 rounded-full text-primary font-bold shadow-lg flex items-center gap-2"
-              href="https://maps.google.com" target="_blank">
+              href="https://maps.app.goo.gl/VSTWEAwevMMGLssx7" target="_blank">
               <span class="material-symbols-outlined">map</span>
               Abrir en Google Maps
             </a>
