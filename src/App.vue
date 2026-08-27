@@ -26,6 +26,7 @@ import ViviendoEspirituSection from './components/ministries/ViviendoEspirituSec
 // Import Events Page specific components
 import EventsHeroSection from './components/events/EventsHeroSection.vue'
 import EventsGridSection from './components/events/EventsGridSection.vue'
+import EventDetailSection from './components/events/EventDetailSection.vue'
 
 // Import Contact Page specific components
 import ContactHeroSection from './components/contact/ContactHeroSection.vue'
@@ -54,9 +55,17 @@ onUnmounted(() => {
 const currentPage = computed(() => {
   if (currentHash.value.startsWith('#about')) return 'about'
   if (currentHash.value.startsWith('#ministries')) return 'ministries'
+  if (currentHash.value.startsWith('#events/')) return 'event-detail'
   if (currentHash.value.startsWith('#events')) return 'events'
   if (currentHash.value.startsWith('#contact')) return 'contact'
   return 'home'
+})
+
+const currentSlug = computed(() => {
+  if (currentPage.value === 'event-detail') {
+    return currentHash.value.substring(8) // '#events/' is 8 characters long
+  }
+  return ''
 })
 </script>
 
@@ -75,7 +84,7 @@ const currentPage = computed(() => {
           <!-- Welcome Section -->
           <WelcomeSection />
 
-          <!-- Calendario / Events -->
+          <!-- Events -->
           <EventsSection />
 
           <!-- Ministerios / Ministries -->
@@ -116,6 +125,11 @@ const currentPage = computed(() => {
 
           <!-- Events Grid Section -->
           <EventsGridSection :selectedMonth="selectedMonth" @reset-filter="selectedMonth = 'Todos'" />
+        </div>
+
+        <!-- Event Detail View -->
+        <div v-else-if="currentPage === 'event-detail'" key="event-detail">
+          <EventDetailSection :slug="currentSlug" />
         </div>
 
         <!-- Contact View -->
