@@ -5,6 +5,8 @@ const isOpen = ref(false)
 const requestText = ref('')
 const requesterName = ref('')
 const isSubmitted = ref(false)
+const isLoading = ref(false)
+const petitionError = ref('')
 
 const toggleModal = () => {
   isOpen.value = !isOpen.value
@@ -12,15 +14,59 @@ const toggleModal = () => {
     isSubmitted.value = false
     requestText.value = ''
     requesterName.value = ''
+    petitionError.value = ''
   }
 }
 
-const handleSubmit = () => {
-  if (!requestText.value) return
-  // Simulate sending request
-  setTimeout(() => {
+const handleSubmit = async () => {
+  if (!requesterName.value || !requestText.value) {
+    petitionError.value = 'Todos los campos son obligatorios.'
+    return
+  }
+  
+  isLoading.value = true
+  petitionError.value = ''
+  
+  try {
+    const url = `${import.meta.env.VITE_API_URL}petitions`
+    const key = import.meta.env.VITE_API_KEY
+    
+    if (!url || !key) {
+      throw new Error('API config is missing')
+    }
+
+    const payload = {
+      name: requesterName.value,
+      petition: requestText.value
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-API-KEY': key
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const resJson = await response.json()
+
+    if (!response.ok) {
+      if (resJson.errors) {
+        const errorMsgs = Object.values(resJson.errors).flat().join(' ')
+        throw new Error(errorMsgs || resJson.message || 'Error de validación.')
+      }
+      throw new Error(resJson.message || 'Error al enviar la petición de oración.')
+    }
+
     isSubmitted.value = true
-  }, 400)
+    isLoading.value = false
+  } catch (error: any) {
+    console.error('Error submitting prayer petition:', error)
+    petitionError.value = error.message || 'Error al conectar con el servidor. Inténtalo de nuevo.'
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -58,11 +104,12 @@ const handleSubmit = () => {
                   Comparte tu intención. Nuestra comunidad se compromete a interceder por ti ante el Señor.
                 </p>
                 <div class="flex flex-col gap-1">
-                  <label for="pName" class="font-body-md font-bold text-xs text-primary uppercase">Tu Nombre (Opcional)</label>
+                  <label for="pName" class="font-body-md font-bold text-xs text-primary uppercase">Tu Nombre</label>
                   <input 
                     id="pName"
                     v-model="requesterName" 
                     type="text" 
+                    required
                     placeholder="Escribe tu nombre" 
                     class="border-b border-outline-variant/50 p-2 outline-none focus:border-secondary transition-all w-full text-on-surface"
                   />
@@ -78,8 +125,17 @@ const handleSubmit = () => {
                     class="border border-outline-variant/50 rounded-lg p-2 outline-none focus:border-secondary transition-all w-full text-on-surface resize-none"
                   ></textarea>
                 </div>
-                <button type="submit" class="w-full bg-primary text-on-primary py-3 rounded-lg font-body-md text-body-md glow-hover transition-all cursor-pointer active:opacity-80">
-                  Enviar Petición
+                <!-- Error Alert Box -->
+                <transition name="fade">
+                  <div v-if="petitionError" class="p-3 bg-error/10 border border-error/20 text-error rounded-lg text-xs font-semibold flex items-center gap-1.5 leading-tight">
+                    <span class="material-symbols-outlined text-base">error</span>
+                    <span>{{ petitionError }}</span>
+                  </div>
+                </transition>
+
+                <button type="submit" :disabled="isLoading" class="w-full bg-primary text-on-primary py-3 rounded-lg font-body-md text-body-md glow-hover transition-all cursor-pointer active:opacity-80 flex items-center justify-center gap-2">
+                  <span v-if="!isLoading">Enviar Petición</span>
+                  <span v-else class="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
                 </button>
               </form>
 
