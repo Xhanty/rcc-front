@@ -3,27 +3,71 @@ import { ref } from 'vue'
 
 const name = ref('')
 const email = ref('')
-const subject = ref('general')
+const subject = ref('Información General')
 const message = ref('')
 const isSubmitted = ref(false)
 const isLoading = ref(false)
+const formError = ref('')
 
-const handleFormSubmit = () => {
-  if (!name.value || !email.value || !message.value) return
+const handleFormSubmit = async () => {
+  if (!name.value || !email.value || !subject.value || !message.value) {
+    formError.value = 'Todos los campos son obligatorios.'
+    return
+  }
+  
   isLoading.value = true
+  formError.value = ''
+  
+  try {
+    const url = `${import.meta.env.VITE_API_URL}contacts`
+    const key = import.meta.env.VITE_API_KEY
+    
+    if (!url || !key) {
+      throw new Error('API config is missing')
+    }
 
-  // Simulate network request
-  setTimeout(() => {
-    isLoading.value = false
+    const payload = {
+      name: name.value,
+      email: email.value,
+      subject: subject.value,
+      message: message.value
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-API-KEY': key
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const resJson = await response.json()
+
+    if (!response.ok) {
+      if (resJson.errors) {
+        const errorMsgs = Object.values(resJson.errors).flat().join(' ')
+        throw new Error(errorMsgs || resJson.message || 'Error de validación.')
+      }
+      throw new Error(resJson.message || 'Error al enviar el mensaje de contacto.')
+    }
+
     isSubmitted.value = true
-  }, 1000)
+    isLoading.value = false
+  } catch (error: any) {
+    console.error('Error submitting contact form:', error)
+    formError.value = error.message || 'Error al conectar con el servidor. Inténtalo de nuevo.'
+    isLoading.value = false
+  }
 }
 
 const resetForm = () => {
   name.value = ''
   email.value = ''
-  subject.value = 'general'
+  subject.value = 'Información General'
   message.value = ''
+  formError.value = ''
   isSubmitted.value = false
 }
 </script>
@@ -60,10 +104,10 @@ const resetForm = () => {
                 <label class="font-title-md text-title-md text-primary" for="subject">Asunto</label>
                 <select id="subject" v-model="subject"
                   class="input-minimal font-body-md py-2 appearance-none bg-transparent text-on-surface cursor-pointer">
-                  <option value="general" class="bg-surface text-on-surface">Información General</option>
-                  <option value="prayer" class="bg-surface text-on-surface">Petición de Oración</option>
-                  <option value="ministry" class="bg-surface text-on-surface">Pregunta sobre Ministerios</option>
-                  <option value="events" class="bg-surface text-on-surface">Eventos y Retiros</option>
+                  <option value="Información General" class="bg-surface text-on-surface">Información General</option>
+                  <option value="Petición de Oración" class="bg-surface text-on-surface">Petición de Oración</option>
+                  <option value="Pregunta sobre Ministerios" class="bg-surface text-on-surface">Pregunta sobre Ministerios</option>
+                  <option value="Eventos y Retiros" class="bg-surface text-on-surface">Eventos y Retiros</option>
                 </select>
               </div>
 
@@ -73,6 +117,14 @@ const resetForm = () => {
                   class="input-minimal font-body-md py-2 resize-none text-on-surface"
                   placeholder="¿Cómo podemos ayudarte hoy?"></textarea>
               </div>
+
+              <!-- Error message alert box -->
+              <transition name="fade">
+                <div v-if="formError" class="p-4 bg-error/10 border border-error/20 text-error rounded-xl flex items-center gap-2 font-body-md">
+                  <span class="material-symbols-outlined text-xl">error</span>
+                  <span>{{ formError }}</span>
+                </div>
+              </transition>
 
               <button type="submit"
                 class="w-full md:w-auto px-10 py-4 bg-primary text-on-primary rounded-full font-bold shadow-amber-glow transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] cursor-pointer"
