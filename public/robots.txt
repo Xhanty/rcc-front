@@ -1,0 +1,6 @@
+# robots.txt for Resucitados RCC
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://resucitadosrcc.com/sitemap.xml
