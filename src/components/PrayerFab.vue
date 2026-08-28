@@ -4,6 +4,8 @@ import { ref } from 'vue'
 const isOpen = ref(false)
 const requestText = ref('')
 const requesterName = ref('')
+const requesterEmail = ref('')
+const requesterPhone = ref('')
 const isSubmitted = ref(false)
 const isLoading = ref(false)
 const petitionError = ref('')
@@ -14,6 +16,8 @@ const toggleModal = () => {
     isSubmitted.value = false
     requestText.value = ''
     requesterName.value = ''
+    requesterEmail.value = ''
+    requesterPhone.value = ''
     petitionError.value = ''
   }
 }
@@ -37,7 +41,9 @@ const handleSubmit = async () => {
 
     const payload = {
       name: requesterName.value,
-      petition: requestText.value
+      petition: requestText.value,
+      email: requesterEmail.value || null,
+      phone: requesterPhone.value ? String(requesterPhone.value) : null
     }
 
     const response = await fetch(url, {
@@ -103,7 +109,7 @@ const handleSubmit = async () => {
                 <p class="text-on-surface-variant font-body-md text-body-md">
                   Comparte tu intención. Nuestra comunidad se compromete a interceder por ti ante el Señor.
                 </p>
-                <div class="flex flex-col gap-1">
+                 <div class="flex flex-col gap-1">
                   <label for="pName" class="font-body-md font-bold text-xs text-primary uppercase">Tu Nombre</label>
                   <input 
                     id="pName"
@@ -113,6 +119,28 @@ const handleSubmit = async () => {
                     placeholder="Escribe tu nombre" 
                     class="border-b border-outline-variant/50 p-2 outline-none focus:border-secondary transition-all w-full text-on-surface"
                   />
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="flex flex-col gap-1">
+                    <label for="pEmail" class="font-body-md font-bold text-xs text-primary uppercase">Email (Opcional)</label>
+                    <input 
+                      id="pEmail"
+                      v-model="requesterEmail" 
+                      type="email" 
+                      placeholder="maria@ejemplo.com" 
+                      class="border-b border-outline-variant/50 p-2 outline-none focus:border-secondary transition-all w-full text-on-surface text-sm"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label for="pPhone" class="font-body-md font-bold text-xs text-primary uppercase">Teléfono (Opcional)</label>
+                    <input 
+                      id="pPhone"
+                      v-model="requesterPhone" 
+                      type="number" 
+                      placeholder="Ej. 3103748739" 
+                      class="border-b border-outline-variant/50 p-2 outline-none focus:border-secondary transition-all w-full text-on-surface text-sm"
+                    />
+                  </div>
                 </div>
                 <div class="flex flex-col gap-1">
                   <label for="pText" class="font-body-md font-bold text-xs text-primary uppercase">Intención de Oración</label>
