@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 const name = ref('')
 const email = ref('')
+const phone = ref('')
 const subject = ref('Información General')
 const message = ref('')
 const isSubmitted = ref(false)
@@ -10,8 +11,8 @@ const isLoading = ref(false)
 const formError = ref('')
 
 const handleFormSubmit = async () => {
-  if (!name.value || !email.value || !subject.value || !message.value) {
-    formError.value = 'Todos los campos son obligatorios.'
+  if (!name.value || !subject.value || !message.value) {
+    formError.value = 'El nombre, asunto y mensaje son campos obligatorios.'
     return
   }
 
@@ -28,7 +29,8 @@ const handleFormSubmit = async () => {
 
     const payload = {
       name: name.value,
-      email: email.value,
+      email: email.value || null,
+      phone: phone.value ? String(phone.value) : null,
       subject: subject.value,
       message: message.value
     }
@@ -65,6 +67,7 @@ const handleFormSubmit = async () => {
 const resetForm = () => {
   name.value = ''
   email.value = ''
+  phone.value = ''
   subject.value = 'Información General'
   message.value = ''
   formError.value = ''
@@ -87,16 +90,23 @@ const resetForm = () => {
             </div>
 
             <form @submit.prevent="handleFormSubmit" class="space-y-6 md:space-y-8">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+              <div class="grid grid-cols-1 gap-gutter">
                 <div class="flex flex-col gap-1">
                   <label class="font-title-md text-title-md text-primary" for="name">Nombre Completo</label>
                   <input id="name" v-model="name" required class="input-minimal font-body-md py-2 text-on-surface"
                     placeholder="Ej. María García" type="text" />
                 </div>
-                <div class="flex flex-col gap-1">
-                  <label class="font-title-md text-title-md text-primary" for="email">Correo Electrónico</label>
-                  <input id="email" v-model="email" required class="input-minimal font-body-md py-2 text-on-surface"
-                    placeholder="maria@ejemplo.com" type="email" />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+                  <div class="flex flex-col gap-1">
+                    <label class="font-title-md text-title-md text-primary" for="email">Correo Electrónico (Opcional)</label>
+                    <input id="email" v-model="email" class="input-minimal font-body-md py-2 text-on-surface"
+                      placeholder="maria@ejemplo.com" type="email" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="font-title-md text-title-md text-primary" for="phone">Teléfono (Opcional)</label>
+                    <input id="phone" v-model="phone" class="input-minimal font-body-md py-2 text-on-surface"
+                      placeholder="Ej. 3103748739" type="number" />
+                  </div>
                 </div>
               </div>
 
@@ -105,7 +115,6 @@ const resetForm = () => {
                 <select id="subject" v-model="subject"
                   class="input-minimal font-body-md py-2 appearance-none bg-transparent text-on-surface cursor-pointer">
                   <option value="Información General" class="bg-surface text-on-surface">Información General</option>
-                  <option value="Petición de Oración" class="bg-surface text-on-surface">Petición de Oración</option>
                   <option value="Pregunta sobre Ministerios" class="bg-surface text-on-surface">Pregunta sobre
                     Ministerios</option>
                   <option value="Eventos y Retiros" class="bg-surface text-on-surface">Eventos y Retiros</option>
