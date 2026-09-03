@@ -25,6 +25,55 @@ const monthNames = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ]
 
+const findBestInitialDate = (yearsData: YearMonthData[]): { year: number; month: number } | null => {
+  if (yearsData.length === 0) return null
+
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1 // 1-indexed (1-12)
+  const currentKey = currentYear * 100 + currentMonth
+
+  // Collect all available year-month pairs
+  const allDates: { year: number; month: number; key: number }[] = []
+  for (const yData of yearsData) {
+    for (const m of yData.months) {
+      allDates.push({
+        year: yData.year,
+        month: m,
+        key: yData.year * 100 + m
+      })
+    }
+  }
+
+  if (allDates.length === 0) return null
+
+  // Sort dates ascending
+  allDates.sort((a, b) => a.key - b.key)
+
+  // 1. Check for exact match (current year and current month)
+  const exactMatch = allDates.find(d => d.key === currentKey)
+  if (exactMatch) {
+    return { year: exactMatch.year, month: exactMatch.month }
+  }
+
+  // 2. Find the most recent prior date (key < currentKey)
+  const priorDates = allDates.filter(d => d.key < currentKey)
+  if (priorDates.length > 0) {
+    const mostRecentPrior = priorDates[priorDates.length - 1]
+    if (mostRecentPrior) {
+      return { year: mostRecentPrior.year, month: mostRecentPrior.month }
+    }
+  }
+
+  // 3. If all dates are in the future relative to current date, pick the earliest upcoming date
+  const earliestUpcoming = allDates[0]
+  if (earliestUpcoming) {
+    return { year: earliestUpcoming.year, month: earliestUpcoming.month }
+  }
+
+  return null
+}
+
 const fetchActiveMonths = async () => {
   try {
     const url = `${import.meta.env.VITE_API_URL}configuration/events/active-months`
@@ -56,14 +105,16 @@ const fetchActiveMonths = async () => {
     }).sort((a: any, b: any) => b.year - a.year)
 
     if (activeYears.value.length > 0) {
-      // Default to the first year and its first month if not set
-      if (props.selectedYear === null || props.selectedMonth === null) {
-        const firstYearObj = activeYears.value[0]
-        if (firstYearObj) {
-          emit('update:selectedYear', firstYearObj.year)
-          if (firstYearObj.months && firstYearObj.months.length > 0) {
-            emit('update:selectedMonth', firstYearObj.months[0] ?? null)
-          }
+      const isCurrentSelectionValid = 
+        props.selectedYear !== null && 
+        props.selectedMonth !== null && 
+        activeYears.value.some(y => y.year === props.selectedYear && y.months.includes(props.selectedMonth!))
+
+      if (!isCurrentSelectionValid) {
+        const bestDate = findBestInitialDate(activeYears.value)
+        if (bestDate) {
+          emit('update:selectedYear', bestDate.year)
+          emit('update:selectedMonth', bestDate.month)
         }
       }
     }
@@ -79,11 +130,44 @@ onMounted(() => {
   fetchActiveMonths()
 })
 
+watch(() => [props.selectedYear, props.selectedMonth], () => {
+  if (activeYears.value.length > 0 && (props.selectedYear === null || props.selectedMonth === null)) {
+    const bestDate = findBestInitialDate(activeYears.value)
+    if (bestDate) {
+      emit('update:selectedYear', bestDate.year)
+      emit('update:selectedMonth', bestDate.month)
+    }
+  }
+})
+
 const selectYear = (year: number) => {
   emit('update:selectedYear', year)
   const yearData = activeYears.value.find(y => y.year === year)
   if (yearData && yearData.months && yearData.months.length > 0) {
-    emit('update:selectedMonth', yearData.months[0] ?? null)
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+
+    let targetMonth: number | null = null
+
+    if (year === currentYear) {
+      if (yearData.months.includes(currentMonth)) {
+        targetMonth = currentMonth
+      } else {
+        const priorMonths = yearData.months.filter(m => m < currentMonth)
+        if (priorMonths.length > 0) {
+          targetMonth = priorMonths[priorMonths.length - 1] ?? null
+        } else {
+          targetMonth = yearData.months[0] ?? null
+        }
+      }
+    } else if (year < currentYear) {
+      targetMonth = yearData.months[yearData.months.length - 1] ?? null
+    } else {
+      targetMonth = yearData.months[0] ?? null
+    }
+
+    emit('update:selectedMonth', targetMonth)
   }
 }
 
