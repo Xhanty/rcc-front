@@ -54,13 +54,19 @@ export default {
         "on-tertiary-fixed-variant": "var(--color-on-tertiary-fixed-variant)",
         "background": "var(--color-background)",
         "on-background": "var(--color-on-background)",
-        "surface-variant": "var(--color-surface-variant)"
+        "surface-variant": "var(--color-surface-variant)",
+        "deep-forest-teal": "#1b4d4f",
+        "vibrant-teal": "#007681",
+        "accent-flame-gold": "#d49e35",
+        "soft-mint-tint": "#eaf2f1",
+        "charcoal-dark": "#222222"
       },
       borderRadius: {
         "DEFAULT": "0.125rem",
         "lg": "0.25rem",
         "xl": "0.5rem",
-        "full": "0.75rem"
+        "full": "0.75rem",
+        "pill": "9999px"
       },
       spacing: {
         "margin-mobile": "16px",
@@ -78,7 +84,10 @@ export default {
         "title-md": ["Hanken Grotesk", "sans-serif"],
         "headline-lg": ["EB Garamond", "serif"],
         "garamond": ["EB Garamond", "serif"],
-        "hanken": ["Hanken Grotesk", "sans-serif"]
+        "hanken": ["Hanken Grotesk", "sans-serif"],
+        "display": ["Montserrat", "sans-serif"],
+        "headline": ["Montserrat", "sans-serif"],
+        "jakarta": ["Plus Jakarta Sans", "sans-serif"]
       },
       fontSize: {
         "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "500" }],

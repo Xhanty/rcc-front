@@ -1,11 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 defineProps<{
   currentPage: string
 }>()
 
 const isMobileMenuOpen = ref(false)
+const isScrolled = ref(false)
+
+const navItems = [
+  { id: 'home', label: 'Inicio', href: '#' },
+  { id: 'about', label: 'Nosotros', href: '#about' },
+  { id: 'community', label: 'Vida Comunitaria', href: '#community' },
+  { id: 'ministries', label: 'Ministerios', href: '#ministries' },
+  { id: 'events', label: 'Eventos', href: '#events' },
+  { id: 'contact', label: 'Contacto', href: '#contact' }
+]
+
+const isItemActive = (itemId: string, currentPage: string) => {
+  if (itemId === 'events' && currentPage === 'event-detail') return true
+  return currentPage === itemId
+}
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -14,120 +29,116 @@ const toggleMobileMenu = () => {
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 24
+}
+
+onMounted(() => {
+  handleScroll()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
-  <header class="w-full top-0 sticky z-50 backdrop-blur-md border-b border-outline-variant shadow-sm h-20"
-    style="background-color: rgba(248, 249, 255, 0.8)">
-    <div class="max-w-max-width mx-auto px-6 md:px-margin-desktop flex justify-between items-center h-full">
-      <!-- Logo and Brand -->
-      <div @click="closeMobileMenu" class="flex items-center gap-2 cursor-pointer active:opacity-80">
-        <img alt="Resucitados RCC Logo" class="h-10 min-[900px]:h-12 w-auto object-contain" src="/img/icon.png" />
-        <a href="#" class="font-display-lg text-title-md text-primary">Resucitados RCC</a>
+  <header
+    :class="[
+      'fixed top-0 left-0 w-full z-50 px-4 sm:px-8 transition-all duration-500 ease-out',
+      isScrolled ? 'pt-2.5 pb-1' : 'pt-4 pb-2'
+    ]"
+  >
+    <nav
+      :class="[
+        'max-w-7xl mx-auto backdrop-blur-xl rounded-[9999px] px-5 sm:px-7 border border-white/15 flex items-center justify-between lg:grid lg:grid-cols-[1fr_auto_1fr] text-white transition-all duration-500 ease-out',
+        isScrolled
+          ? 'bg-[#1b4d4f]/95 py-2.5 shadow-2xl shadow-[#1b4d4f]/35'
+          : 'bg-[#1b4d4f]/95 py-3.5 shadow-xl shadow-[#1b4d4f]/25'
+      ]"
+    >
+      <!-- Logo & Brand -->
+      <a
+        href="#"
+        @click="closeMobileMenu"
+        class="flex items-center gap-3 group cursor-pointer active:opacity-80 shrink-0 justify-self-start"
+      >
+        <div
+          class="h-10 w-10 rounded-[9999px] bg-white flex items-center justify-center p-1.5 shadow-sm ring-4 ring-white/10 group-hover:scale-105 smooth-transition shrink-0"
+        >
+          <img
+            alt="Resucitados RCC Logo"
+            class="h-full w-full object-contain"
+            src="/img/icon.png"
+          />
+        </div>
+        <span
+          class="font-headline font-extrabold text-base sm:text-lg tracking-tight text-white uppercase whitespace-nowrap"
+        >
+          Resucitados RCC
+        </span>
+      </a>
+
+      <!-- Desktop Floating Oval Nav Pills -->
+      <div
+        class="hidden md:flex items-center space-x-1 bg-white/10 px-2.5 py-1.5 rounded-[9999px] border border-white/15 font-headline text-xs uppercase tracking-wider font-bold justify-self-center"
+      >
+        <a
+          v-for="item in navItems"
+          :key="item.id"
+          :href="item.href"
+          :class="[
+            'px-4 py-1.5 rounded-[9999px] smooth-transition cursor-pointer whitespace-nowrap',
+            isItemActive(item.id, currentPage)
+              ? 'bg-white text-[#1b4d4f] font-extrabold shadow-sm'
+              : 'text-white/80 hover:text-white hover:bg-white/10'
+          ]"
+        >
+          {{ item.label }}
+        </a>
       </div>
 
-      <!-- Desktop Navigation Links -->
-      <nav class="hidden min-[900px]:flex items-center gap-8">
-        <a href="#" :class="[
-          'font-body-md text-body-md cursor-pointer transition-colors duration-200',
-          currentPage === 'home'
-            ? 'text-primary border-b-2 border-primary font-bold pb-1'
-            : 'text-on-surface-variant hover:text-primary'
-        ]">
-          Inicio
-        </a>
-        <a href="#about" :class="[
-          'font-body-md text-body-md cursor-pointer transition-colors duration-200',
-          currentPage === 'about'
-            ? 'text-primary border-b-2 border-primary font-bold pb-1'
-            : 'text-on-surface-variant hover:text-primary'
-        ]">
-          Sobre Nosotros
-        </a>
-        <a href="#ministries" :class="[
-          'font-body-md text-body-md cursor-pointer transition-colors duration-200',
-          currentPage === 'ministries'
-            ? 'text-primary border-b-2 border-primary font-bold pb-1'
-            : 'text-on-surface-variant hover:text-primary'
-        ]">
-          Ministerios
-        </a>
-        <a href="#events" :class="[
-          'font-body-md text-body-md cursor-pointer transition-colors duration-200',
-          currentPage === 'events'
-            ? 'text-primary border-b-2 border-primary font-bold pb-1'
-            : 'text-on-surface-variant hover:text-primary'
-        ]">
-          Eventos
-        </a>
-        <a href="#contact" :class="[
-          'font-body-md text-body-md cursor-pointer transition-colors duration-200',
-          currentPage === 'contact'
-            ? 'text-primary border-b-2 border-primary font-bold pb-1'
-            : 'text-on-surface-variant hover:text-primary'
-        ]">
-          Contáctanos
-        </a>
-      </nav>
+      <!-- Right Spacer (Desktop) & Mobile Menu Toggle -->
+      <div class="flex items-center justify-end justify-self-end">
+        <button
+          @click="toggleMobileMenu"
+          class="md:hidden text-white p-2 hover:bg-white/10 rounded-[9999px] smooth-transition flex items-center justify-center cursor-pointer"
+          aria-label="Abrir menú de navegación"
+        >
+          <span class="material-symbols-outlined text-2xl">
+            {{ isMobileMenuOpen ? 'close' : 'menu' }}
+          </span>
+        </button>
+      </div>
+    </nav>
 
-      <!-- Desktop Join Action -->
-      <!-- <button
-        class="hidden min-[900px]:block bg-primary text-on-primary px-8 py-2 rounded-full font-body-md text-body-md hover:bg-primary-container transition-all active:scale-95 duration-200 cursor-pointer">
-        Únete
-      </button> -->
-
-      <!-- Mobile Hamburger Button -->
-      <button @click="toggleMobileMenu"
-        class="min-[900px]:hidden p-base text-primary cursor-pointer active:opacity-80 flex items-center justify-center"
-        aria-label="Toggle Menu">
-        <span class="material-symbols-outlined text-3xl">
-          {{ isMobileMenuOpen ? 'close' : 'menu' }}
-        </span>
-      </button>
-    </div>
-
-    <transition name="slide-down">
-      <div v-if="isMobileMenuOpen"
-        class="min-[900px]:hidden absolute top-20 left-0 w-full backdrop-blur-md border-b border-outline-variant shadow-lg z-40 transition-all duration-300 ease-in-out"
-        style="background-color: rgba(248, 249, 255, 0.95)">
-        <div class="px-6 py-6 flex flex-col gap-gutter">
-          <a @click="closeMobileMenu" href="#" :class="[
-            'font-body-md text-body-md cursor-pointer',
-            currentPage === 'home' ? 'text-primary font-bold' : 'text-on-surface-variant'
-          ]">
-            Inicio
+    <!-- Mobile Dropdown Glass Menu -->
+    <transition name="nav-dropdown">
+      <div
+        v-if="isMobileMenuOpen"
+        class="md:hidden max-w-7xl mx-auto mt-2.5 bg-[#1b4d4f]/95 backdrop-blur-xl rounded-3xl border border-white/15 shadow-2xl shadow-[#1b4d4f]/40 overflow-hidden text-white"
+      >
+        <div class="p-4 flex flex-col gap-1.5 font-headline">
+          <a
+            v-for="item in navItems"
+            :key="item.id"
+            :href="item.href"
+            @click="closeMobileMenu"
+            :class="[
+              'px-5 py-3 rounded-[9999px] text-xs uppercase tracking-wider font-bold smooth-transition flex items-center justify-between',
+              isItemActive(item.id, currentPage)
+                ? 'bg-white text-[#1b4d4f] shadow-sm'
+                : 'text-white/85 hover:text-white hover:bg-white/10'
+            ]"
+          >
+            <span>{{ item.label }}</span>
+            <span
+              v-if="isItemActive(item.id, currentPage)"
+              class="w-2 h-2 rounded-[9999px] bg-[#007681]"
+            ></span>
           </a>
-          <a @click="closeMobileMenu" href="#about" :class="[
-            'font-body-md text-body-md cursor-pointer',
-            currentPage === 'about' ? 'text-primary font-bold' : 'text-on-surface-variant'
-          ]">
-            Sobre Nosotros
-          </a>
-          <a @click="closeMobileMenu" href="#ministries" :class="[
-            'font-body-md text-body-md cursor-pointer',
-            currentPage === 'ministries' ? 'text-primary font-bold' : 'text-on-surface-variant'
-          ]">
-            Ministerios
-          </a>
-          <a @click="closeMobileMenu" href="#events" :class="[
-            'font-body-md text-body-md cursor-pointer',
-            currentPage === 'events' ? 'text-primary font-bold' : 'text-on-surface-variant'
-          ]">
-            Eventos
-          </a>
-          <a @click="closeMobileMenu" href="#contact" :class="[
-            'font-body-md text-body-md cursor-pointer',
-            currentPage === 'contact' ? 'text-primary font-bold' : 'text-on-surface-variant'
-          ]">
-            Contáctanos
-          </a>
-
-          <div class="h-[1px] bg-outline-variant/30 my-2"></div>
-
-          <!-- <button @click="closeMobileMenu"
-            class="w-full bg-primary text-on-primary py-3 rounded-full font-body-md text-body-md hover:bg-primary-container transition-all active:scale-95 cursor-pointer">
-            Únete
-          </button> -->
         </div>
       </div>
     </transition>
@@ -135,18 +146,15 @@ const closeMobileMenu = () => {
 </template>
 
 <style scoped>
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease-in-out;
-  max-height: 400px;
-  opacity: 1;
-  overflow: hidden;
+.nav-dropdown-enter-active,
+.nav-dropdown-leave-active {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
-  max-height: 0;
+.nav-dropdown-enter-from,
+.nav-dropdown-leave-to {
   opacity: 0;
-  overflow: hidden;
+  transform: translateY(-10px) scale(0.98);
 }
 </style>

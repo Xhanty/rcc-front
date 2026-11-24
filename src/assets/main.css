@@ -123,3 +123,127 @@ input:focus, select:focus {
   box-shadow: none;
   border-bottom-color: #fea619;
 }
+
+/* Smooth scrolling across the site */
+html {
+  scroll-behavior: smooth;
+}
+
+/* --- MASVIDA-INSPIRED VISUAL TRANSITIONS & MOTION --- */
+.smooth-transition {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.outline-marquee {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.22);
+  color: transparent;
+}
+
+.outline-teal {
+  -webkit-text-stroke: 1.5px rgba(27, 77, 79, 0.22);
+  color: transparent;
+}
+
+@keyframes marquee-drift {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-slow {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee-drift 36s linear infinite;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll-triggered reveal animations (v-reveal directive) */
+.reveal-base {
+  opacity: 0;
+  will-change: transform, opacity;
+  transition-property: transform, opacity;
+  transition-duration: var(--reveal-duration, 750ms);
+  transition-delay: var(--reveal-delay, 0ms);
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-up {
+  transform: translateY(34px);
+}
+
+.reveal-down {
+  transform: translateY(-28px);
+}
+
+.reveal-left {
+  transform: translateX(-36px);
+}
+
+.reveal-right {
+  transform: translateX(36px);
+}
+
+.reveal-scale {
+  transform: scale(0.94) translateY(18px);
+}
+
+.reveal-zoom-img {
+  transform: scale(1.06);
+}
+
+.reveal-base.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* --- ANCHOR-INSPIRED LAYERED SHEET-OVER-SHEET SCROLL TRANSITIONS --- */
+.sheet-underlay {
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .sheet-underlay {
+    position: sticky;
+    top: 0;
+  }
+}
+
+.sheet-layer {
+  position: relative;
+  border-top-left-radius: 2rem;
+  border-top-right-radius: 2rem;
+  box-shadow: 0 -20px 55px rgba(0, 26, 28, 0.16);
+  margin-top: -1.75rem;
+}
+
+@media (min-width: 640px) {
+  .sheet-layer {
+    border-top-left-radius: 2.75rem;
+    border-top-right-radius: 2.75rem;
+    margin-top: -2.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-base {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .animate-marquee-slow {
+    animation: none !important;
+  }
+  .sheet-underlay {
+    position: relative !important;
+  }
+}
