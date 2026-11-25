@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { resolveEventImageUrl, parseEventLocalDate, getTomorrowStart } from '../../utils/image'
+import {
+  resolveEventImageUrl,
+  parseEventLocalDate,
+  getTomorrowStart,
+  isPublishedEvent
+} from '../../utils/image'
 
 const props = defineProps<{
   selectedYear: number | null
@@ -220,6 +225,7 @@ const fetchUpcomingEvents = async () => {
       const rawEvents = Array.isArray(resJson) ? resJson : resJson.data || []
       const period = periodsToFetch[i]
       for (const item of rawEvents) {
+        if (!isPublishedEvent(item)) continue
         if (item?.id && seenIds.has(item.id)) continue
         const mapped = mapRawEvent(item, period?.year)
         if (mapped.dateObj && mapped.dateObj.getTime() >= tomorrow.getTime()) {
@@ -273,7 +279,9 @@ const fetchEvents = async () => {
     const resJson = await response.json()
     const rawEvents = Array.isArray(resJson) ? resJson : resJson.data || []
 
-    events.value = rawEvents.map((item: any) => mapRawEvent(item, props.selectedYear))
+    events.value = rawEvents
+      .filter(isPublishedEvent)
+      .map((item: any) => mapRawEvent(item, props.selectedYear))
     isLoading.value = false
   } catch (error) {
     console.error('Error fetching filtered events:', error)
@@ -296,6 +304,15 @@ watch(
     fetchEvents()
   }
 )
+
+const availableEventTypes = computed(() => {
+  const presentIds = new Set(
+    events.value
+      .map((ev) => ev.eventTypeId)
+      .filter((id): id is number => id !== null)
+  )
+  return eventTypes.value.filter((type) => presentIds.has(type.id))
+})
 
 const filteredEvents = computed(() => {
   if (selectedEventTypeId.value === null) return events.value
@@ -321,10 +338,10 @@ const openEventDetail = (slug: string) => {
       <div
         class="bg-[#F2F7F6] rounded-b-[2.5rem] px-6 sm:px-8 md:px-14 pt-2 pb-10 sm:pb-12 md:pb-14 border-x border-b border-[#1b4d4f]/10 shadow-xl shadow-[#1b4d4f]/5"
       >
-        <!-- Event Types / Categories Filter Pills -->
+        <!-- Event Types / Categories Filter Pills (only categories that have events in this period) -->
         <div
-          v-if="eventTypes.length > 0"
-          class="flex items-center gap-2 overflow-x-auto pb-6 scrollbar-none"
+          v-if="!isLoading && availableEventTypes.length > 0"
+          class="flex flex-wrap items-center gap-2 pb-6"
         >
           <button
             type="button"
@@ -339,7 +356,7 @@ const openEventDetail = (slug: string) => {
             Todos los tipos
           </button>
           <button
-            v-for="type in eventTypes"
+            v-for="type in availableEventTypes"
             :key="type.id"
             type="button"
             @click="selectedEventTypeId = type.id"

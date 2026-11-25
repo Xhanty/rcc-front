@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { resolveEventImageUrl, parseEventLocalDate, getTomorrowStart } from '../../utils/image'
+import {
+  resolveEventImageUrl,
+  parseEventLocalDate,
+  getTomorrowStart,
+  isPublishedEvent
+} from '../../utils/image'
 
 interface RCCEvent {
   id: number
@@ -156,6 +161,7 @@ const fetchEvents = async () => {
       if (!resJson) continue
       const rawEvents = Array.isArray(resJson) ? resJson : resJson.data || []
       for (const item of rawEvents) {
+        if (!isPublishedEvent(item)) continue
         if (item?.id && seenIds.has(item.id)) continue
         const mapped = mapRawHomeEvent(item)
         if (mapped.dateObj && mapped.dateObj.getTime() >= tomorrow.getTime()) {

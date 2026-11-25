@@ -357,12 +357,13 @@ const getMeetingSummary = (min: Ministry) => {
     </div>
 
     <!-- Ministry Detail Modal (Full Backend Data: detail HTML, leader, servants, schedule) -->
-    <transition name="modal-fade">
-      <div
-        v-if="activeMinistry"
-        @click.self="closeMinistryModal"
-        class="fixed inset-0 z-50 bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4"
-      >
+    <Teleport to="body">
+      <transition name="modal-fade">
+        <div
+          v-if="activeMinistry"
+          @click.self="closeMinistryModal"
+          class="fixed inset-0 z-[90] bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4 font-jakarta"
+        >
         <div
           class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#1b4d4f]/15 relative"
         >
@@ -538,7 +539,8 @@ const getMeetingSummary = (min: Ministry) => {
           </div>
         </div>
       </div>
-    </transition>
+      </transition>
+    </Teleport>
   </section>
 </template>
 

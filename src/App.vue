@@ -187,8 +187,8 @@ const currentSlug = computed(() => {
 
         <!-- Events View (Layered Sheet Flow) -->
         <div v-else-if="currentPage === 'events'" key="events" class="bg-[#F6F9F8] overflow-x-clip">
-          <!-- Events Hero Section -->
-          <div class="relative z-10">
+          <!-- Events Hero Section (higher z-index so Year/Month dropdowns float cleanly over EventsGridSection) -->
+          <div class="relative z-30">
             <EventsHeroSection 
               v-model:selectedYear="selectedYear" 
               v-model:selectedMonth="selectedMonth" 

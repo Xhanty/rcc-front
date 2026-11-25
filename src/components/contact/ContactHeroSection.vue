@@ -113,12 +113,6 @@ const currentYear = new Date().getFullYear()
           <span class="material-symbols-outlined text-[#d49e35] text-base">schedule</span>
           <span>Todos los Miércoles 7:00 PM</span>
         </div>
-        <div
-          class="flex items-center gap-2 px-5 py-2.5 rounded-[9999px] bg-[#245A5C]/65 border border-white/15 backdrop-blur-md shadow-sm"
-        >
-          <span class="material-symbols-outlined text-[#d49e35] text-base">bolt</span>
-          <span>Respuesta en menos de 24 hrs</span>
-        </div>
       </div>
     </div>
   </section>

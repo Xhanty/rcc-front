@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import { resolveEventImageUrl } from '../../utils/image'
+import { resolveEventImageUrl, isPublishedEvent } from '../../utils/image'
 
 const props = defineProps<{
   slug: string
@@ -145,7 +145,11 @@ const fetchEventDetail = async (targetSlug: string) => {
       throw new Error(resJson.message || 'Error al obtener los detalles del evento.')
     }
 
-    event.value = resJson.data || resJson || null
+    const loadedEvent = resJson.data || resJson || null
+    if (loadedEvent && !isPublishedEvent(loadedEvent)) {
+      throw new Error('Este evento aún no se encuentra publicado.')
+    }
+    event.value = loadedEvent
     isLoading.value = false
   } catch (error: any) {
     console.error('Error fetching event details:', error)

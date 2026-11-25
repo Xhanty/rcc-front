@@ -47,7 +47,7 @@ onUnmounted(() => {
 <template>
   <header
     :class="[
-      'fixed top-0 left-0 w-full z-50 px-4 sm:px-8 transition-all duration-500 ease-out',
+      'fixed top-0 left-0 w-full z-[65] px-4 sm:px-8 transition-all duration-500 ease-out',
       isScrolled ? 'pt-2.5 pb-1' : 'pt-4 pb-2'
     ]"
   >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 
 const props = defineProps<{
   selectedYear: number | null
@@ -24,6 +24,35 @@ const monthNames = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ]
+
+const isYearDropdownOpen = ref(false)
+const isMonthDropdownOpen = ref(false)
+const filterBarRef = ref<HTMLElement | null>(null)
+
+const toggleYearDropdown = () => {
+  isYearDropdownOpen.value = !isYearDropdownOpen.value
+  if (isYearDropdownOpen.value) isMonthDropdownOpen.value = false
+}
+
+const toggleMonthDropdown = () => {
+  isMonthDropdownOpen.value = !isMonthDropdownOpen.value
+  if (isMonthDropdownOpen.value) isYearDropdownOpen.value = false
+}
+
+const handleOutsideClick = (e: MouseEvent) => {
+  if (
+    (isYearDropdownOpen.value || isMonthDropdownOpen.value) &&
+    filterBarRef.value &&
+    !filterBarRef.value.contains(e.target as Node)
+  ) {
+    isYearDropdownOpen.value = false
+    isMonthDropdownOpen.value = false
+  }
+}
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleOutsideClick)
+})
 
 const normalizeActiveMonths = (resJson: any): YearMonthData[] => {
   const payload = resJson?.data ?? resJson
@@ -164,6 +193,7 @@ const fetchActiveMonths = async () => {
 
 onMounted(() => {
   fetchActiveMonths()
+  document.addEventListener('click', handleOutsideClick)
 })
 
 watch(
@@ -221,6 +251,7 @@ const selectYear = (year: number) => {
 
     emit('update:selectedMonth', targetMonth)
   }
+  isYearDropdownOpen.value = false
 }
 
 const selectMonth = (monthNum: number) => {
@@ -228,7 +259,15 @@ const selectMonth = (monthNum: number) => {
     emit('update:selectedYear', effectiveYear.value)
   }
   emit('update:selectedMonth', monthNum)
+  isMonthDropdownOpen.value = false
 }
+
+const activeMonthName = computed(() => {
+  if (props.selectedMonth) {
+    return monthNames[Number(props.selectedMonth) - 1] || 'Mes'
+  }
+  return 'Seleccionar mes'
+})
 
 const activePeriodLabel = computed(() => {
   if (props.selectedMonth && effectiveYear.value) {
@@ -346,67 +385,132 @@ const activePeriodLabel = computed(() => {
           <div class="h-10 bg-[#1b4d4f]/10 rounded-[9999px] w-28"></div>
         </div>
 
-        <!-- Active Year & Month Capsule Filter Bar -->
+        <!-- Active Year & Month Modern Calendar Filter Bar -->
         <div
           v-else-if="activeYears.length > 0"
-          class="space-y-4 pb-6 border-b border-[#1b4d4f]/10"
+          ref="filterBarRef"
+          class="pb-6 border-b border-[#1b4d4f]/10"
         >
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-              <!-- Years Selector -->
-              <div class="flex items-center gap-2 shrink-0">
-                <span class="font-headline text-[11px] font-extrabold uppercase tracking-widest text-[#1b4d4f]/70">
-                  Año:
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <!-- Matching Year & Month Custom Dropdowns (scales cleanly to any number of years & months) -->
+            <div class="flex items-end gap-2.5 sm:gap-3 w-full sm:w-auto">
+              <!-- Year Dropdown -->
+              <div class="relative shrink-0 w-[124px] sm:w-40">
+                <span
+                  class="block font-headline text-[10px] font-extrabold uppercase tracking-widest text-[#1b4d4f]/65 mb-1.5 pl-1"
+                >
+                  Año
                 </span>
-                <div class="flex flex-wrap items-center gap-1.5">
-                  <button
-                    v-for="y in activeYears"
-                    :key="y.year"
-                    type="button"
-                    @click="selectYear(y.year)"
+                <button
+                  type="button"
+                  @click="toggleYearDropdown"
+                  :aria-expanded="isYearDropdownOpen"
+                  aria-label="Seleccionar año"
+                  class="w-full px-4 py-2.5 rounded-2xl bg-[#d49e35] hover:bg-[#c48e29] text-[#102e30] font-headline text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-between gap-2 shadow-sm cursor-pointer smooth-transition"
+                >
+                  <span class="flex items-center gap-1.5 truncate">
+                    <span class="material-symbols-outlined text-base">event</span>
+                    <span>{{ effectiveYear }}</span>
+                  </span>
+                  <span
                     :class="[
-                      'px-5 py-2 rounded-[9999px] font-headline text-xs font-extrabold tracking-wider uppercase smooth-transition whitespace-nowrap cursor-pointer active:scale-95',
-                      effectiveYear === y.year
-                        ? 'bg-[#d49e35] text-[#1b4d4f] shadow-sm'
-                        : 'bg-white text-[#1c2424]/70 hover:text-[#1b4d4f] border border-[#1b4d4f]/15 hover:border-[#1b4d4f]'
+                      'material-symbols-outlined text-base smooth-transition shrink-0',
+                      isYearDropdownOpen ? 'rotate-180' : ''
                     ]"
                   >
-                    {{ y.year }}
-                  </button>
-                </div>
+                    expand_more
+                  </span>
+                </button>
+
+                <transition name="fade">
+                  <div
+                    v-if="isYearDropdownOpen"
+                    class="absolute left-0 right-0 top-full mt-2 z-40 bg-white rounded-2xl shadow-2xl shadow-[#1b4d4f]/20 border border-[#1b4d4f]/15 p-1.5 max-h-60 overflow-y-auto space-y-1"
+                  >
+                    <button
+                      v-for="y in activeYears"
+                      :key="y.year"
+                      type="button"
+                      @click="selectYear(y.year)"
+                      :class="[
+                        'w-full px-3.5 py-2.5 rounded-xl font-headline text-xs font-extrabold uppercase tracking-wider flex items-center justify-between gap-2 smooth-transition cursor-pointer',
+                        effectiveYear === y.year
+                          ? 'bg-[#d49e35] text-[#102e30] shadow-xs'
+                          : 'text-[#1b4d4f] hover:bg-[#eaf2f1]'
+                      ]"
+                    >
+                      <span>{{ y.year }}</span>
+                      <span
+                        v-if="effectiveYear === y.year"
+                        class="material-symbols-outlined text-base"
+                      >
+                        check
+                      </span>
+                    </button>
+                  </div>
+                </transition>
               </div>
 
-              <!-- Vertical Divider -->
-              <div class="hidden sm:block w-px h-7 bg-[#1b4d4f]/15"></div>
-
-              <!-- Months Selector -->
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="font-headline text-[11px] font-extrabold uppercase tracking-widest text-[#1b4d4f]/70">
-                  Mes:
+              <!-- Month Dropdown -->
+              <div class="relative flex-1 min-w-0 sm:flex-none sm:w-56">
+                <span
+                  class="block font-headline text-[10px] font-extrabold uppercase tracking-widest text-[#1b4d4f]/65 mb-1.5 pl-1"
+                >
+                  Mes
                 </span>
-                <div class="flex flex-wrap items-center gap-2">
-                  <button
-                    v-for="monthNum in availableMonths"
-                    :key="monthNum"
-                    type="button"
-                    @click="selectMonth(monthNum)"
+                <button
+                  type="button"
+                  @click="toggleMonthDropdown"
+                  :aria-expanded="isMonthDropdownOpen"
+                  aria-label="Seleccionar mes"
+                  class="w-full px-4 py-2.5 rounded-2xl bg-[#1b4d4f] hover:bg-[#13383a] text-white font-headline text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-between gap-2 shadow-sm cursor-pointer smooth-transition"
+                >
+                  <span class="flex items-center gap-1.5 truncate">
+                    <span class="material-symbols-outlined text-base text-[#f3d078]">
+                      calendar_month
+                    </span>
+                    <span class="truncate">{{ activeMonthName }}</span>
+                  </span>
+                  <span
                     :class="[
-                      'px-4 sm:px-5 py-2 rounded-[9999px] font-headline text-xs font-bold tracking-wider uppercase smooth-transition whitespace-nowrap cursor-pointer active:scale-95',
-                      Number(selectedMonth) === monthNum
-                        ? 'bg-[#1b4d4f] text-white shadow-sm'
-                        : 'bg-white text-[#1c2424]/75 hover:text-[#1b4d4f] border border-[#1b4d4f]/15 hover:border-[#1b4d4f]'
+                      'material-symbols-outlined text-base text-[#f3d078] smooth-transition shrink-0',
+                      isMonthDropdownOpen ? 'rotate-180' : ''
                     ]"
                   >
-                    {{ monthNames[monthNum - 1] }}
-                  </button>
-                </div>
+                    expand_more
+                  </span>
+                </button>
+
+                <transition name="fade">
+                  <div
+                    v-if="isMonthDropdownOpen"
+                    class="absolute right-0 sm:left-0 top-full mt-2 z-40 w-[260px] sm:w-[300px] bg-white rounded-2xl shadow-2xl shadow-[#1b4d4f]/20 border border-[#1b4d4f]/15 p-2 grid grid-cols-2 gap-1.5 max-h-72 overflow-y-auto"
+                  >
+                    <button
+                      v-for="monthNum in availableMonths"
+                      :key="`m-${monthNum}`"
+                      type="button"
+                      @click="selectMonth(monthNum)"
+                      :class="[
+                        'px-3 py-2.5 rounded-xl font-headline text-[11px] font-extrabold uppercase tracking-wide text-center smooth-transition cursor-pointer whitespace-nowrap',
+                        Number(selectedMonth) === monthNum
+                          ? 'bg-[#1b4d4f] text-white shadow-xs'
+                          : 'bg-[#f4f8f7] text-[#1b4d4f] hover:bg-[#eaf2f1]'
+                      ]"
+                    >
+                      {{ monthNames[monthNum - 1] }}
+                    </button>
+                  </div>
+                </transition>
               </div>
             </div>
 
+            <!-- Active Period Pill -->
             <div
-              class="font-headline text-xs uppercase tracking-widest font-extrabold text-[#1b4d4f]/60 hidden xl:block whitespace-nowrap"
+              class="hidden md:inline-flex items-center gap-2 px-4 py-2.5 rounded-[9999px] bg-white border border-[#1b4d4f]/10 font-headline text-[11px] uppercase tracking-widest font-extrabold text-[#1b4d4f]/75 whitespace-nowrap shrink-0 self-end shadow-xs"
             >
-              Mostrando {{ activePeriodLabel }}
+              <span class="material-symbols-outlined text-sm text-[#d49e35]">calendar_today</span>
+              <span>Mostrando {{ activePeriodLabel }}</span>
             </div>
           </div>
         </div>

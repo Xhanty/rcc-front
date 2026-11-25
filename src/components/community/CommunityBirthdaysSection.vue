@@ -17,7 +17,6 @@ const birthdays = ref<BirthdayPerson[]>([])
 const isLoading = ref(true)
 const hasError = ref(false)
 const showAll = ref(false)
-const blessedIds = ref<Record<number, boolean>>({})
 
 const INITIAL_VISIBLE = 8
 
@@ -132,10 +131,6 @@ const hasMore = computed(() => sortedBirthdays.value.length > INITIAL_VISIBLE)
 const todayCount = computed(() => sortedBirthdays.value.filter((b) => b.is_today).length)
 
 const weekCount = computed(() => sortedBirthdays.value.length)
-
-const sendBlessing = (id: number) => {
-  blessedIds.value = { ...blessedIds.value, [id]: true }
-}
 </script>
 
 <template>
@@ -200,7 +195,6 @@ const sendBlessing = (id: number) => {
           <div class="w-20 h-20 rounded-[9999px] bg-[#1b4d4f]/10"></div>
           <div class="h-5 w-3/4 bg-[#1b4d4f]/10 rounded"></div>
           <div class="h-4 w-1/2 bg-[#1b4d4f]/10 rounded"></div>
-          <div class="h-9 w-full bg-[#1b4d4f]/10 rounded-[9999px]"></div>
         </div>
       </div>
 
@@ -290,24 +284,6 @@ const sendBlessing = (id: number) => {
                 </p>
               </div>
             </div>
-
-            <button
-              type="button"
-              @click="sendBlessing(person.id)"
-              :class="[
-                'w-full mt-2 py-2.5 rounded-[9999px] font-headline text-xs font-extrabold uppercase tracking-wider smooth-transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5',
-                blessedIds[person.id]
-                  ? 'bg-[#d49e35] text-white shadow-sm'
-                  : person.is_today
-                    ? 'bg-[#1b4d4f] hover:bg-[#007681] text-white'
-                    : 'bg-[#f0eded] hover:bg-[#1b4d4f] hover:text-white text-[#1b4d4f]'
-              ]"
-            >
-              <span v-if="blessedIds[person.id]" class="material-symbols-outlined text-base">
-                favorite
-              </span>
-              <span>{{ blessedIds[person.id] ? '¡Bendición Enviada!' : 'Enviar Bendición' }}</span>
-            </button>
           </article>
         </div>
 

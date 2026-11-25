@@ -226,7 +226,12 @@ const scrollToEsencia = () => {
         class="relative z-10 -mt-3 sm:-mt-6 lg:-mt-8"
       >
         <div
-          class="relative rounded-[1.75rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/25 border border-white/15 bg-[#12383A] min-h-[260px] sm:min-h-[380px] lg:min-h-[460px] flex items-center justify-center group"
+          :class="[
+            'relative rounded-[1.75rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/25 border border-white/15 bg-[#12383A] group',
+            isLoadingBanners || !isFirstImageLoaded
+              ? 'min-h-[220px] sm:min-h-[320px] lg:min-h-[400px]'
+              : ''
+          ]"
         >
           <!-- Subtle top scrim so straddling text/subtitle stays readable without hiding the image -->
           <div
@@ -273,13 +278,13 @@ const scrollToEsencia = () => {
               class="block relative w-full bg-[#12383A]"
             >
               <img
-                v-parallax="{ range: 18, scale: 1.03 }"
+                v-parallax="{ range: 10, scale: 1.06 }"
                 :src="currentSlide.src"
                 :alt="currentSlide.description || currentSlide.title"
                 @load="handleSlideLoad"
                 @error="handleSlideError(currentSlide.key)"
                 :class="[
-                  'w-full h-auto max-h-[82vh] object-contain mx-auto block transition-opacity duration-500',
+                  'w-full h-auto max-h-[82vh] object-cover block transition-opacity duration-500',
                   isFirstImageLoaded ? 'opacity-100' : 'opacity-0'
                 ]"
               />

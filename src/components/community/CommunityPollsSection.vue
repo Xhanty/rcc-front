@@ -556,7 +556,7 @@ const submitVote = async (poll: CommunityPoll) => {
 <template>
   <section
     id="encuestas"
-    class="bg-[#fcf9f8] px-6 lg:px-12 -mt-14 pb-16 relative z-20 font-jakarta scroll-mt-24"
+    class="bg-[#fcf9f8] px-6 lg:px-12 pt-6 sm:pt-10 pb-16 relative z-20 font-jakarta scroll-mt-24"
   >
     <div class="max-w-7xl mx-auto">
       <div

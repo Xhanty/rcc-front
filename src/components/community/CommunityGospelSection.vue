@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { resolveEventImageUrl } from '../../utils/image'
 
 interface LiturgyGospel {
@@ -54,10 +54,31 @@ const hasError = ref(false)
 // Active tab: 'gospel' or reading.type ('first_reading', 'psalm', 'second_reading', etc.)
 const activeTab = ref<string>('gospel')
 const activeSaintIndex = ref(0)
+const isSaintDropdownOpen = ref(false)
+const saintDropdownRef = ref<HTMLElement | null>(null)
 const brokenSaintImages = ref<Record<number, boolean>>({})
 const showSaintModal = ref(false)
 const isPlayingAudio = ref(false)
 const audioRef = ref<HTMLAudioElement | null>(null)
+
+const selectSaint = (idx: number) => {
+  activeSaintIndex.value = idx
+  isSaintDropdownOpen.value = false
+}
+
+const handleDocumentClick = (e: MouseEvent) => {
+  if (
+    isSaintDropdownOpen.value &&
+    saintDropdownRef.value &&
+    !saintDropdownRef.value.contains(e.target as Node)
+  ) {
+    isSaintDropdownOpen.value = false
+  }
+}
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleDocumentClick)
+})
 
 const fetchLiturgyToday = async () => {
   isLoading.value = true
@@ -145,6 +166,7 @@ const fetchLiturgyToday = async () => {
 
 onMounted(() => {
   fetchLiturgyToday()
+  document.addEventListener('click', handleDocumentClick)
 })
 
 const readingTabs = computed(() => {
@@ -469,65 +491,103 @@ const toggleAudio = () => {
             </span>
           </div>
 
-          <!-- Multi-Saint Selector: Wrap pills for 2-4 saints, compact dropdown + arrows for 5+ -->
+          <!-- Multi-Saint Custom Full-Width Dropdown (no boxy native select, no space-stealing arrows) -->
           <div
-            v-if="liturgy.saints.length > 1 && liturgy.saints.length <= 4"
-            class="flex flex-wrap items-center gap-1.5 relative z-10"
+            v-if="liturgy.saints.length > 1"
+            ref="saintDropdownRef"
+            class="space-y-2.5 relative z-20"
           >
-            <button
-              v-for="(s, sIdx) in liturgy.saints"
-              :key="s.name"
-              type="button"
-              @click="activeSaintIndex = sIdx"
-              :class="[
-                'px-3 py-1.5 rounded-[9999px] font-headline text-[10px] font-extrabold uppercase tracking-wider smooth-transition cursor-pointer text-left',
-                activeSaintIndex === sIdx
-                  ? 'bg-[#1b4d4f] text-white shadow-sm'
-                  : 'bg-[#eaf2f1] text-[#1b4d4f] hover:bg-[#dce4e3]'
-              ]"
-            >
-              {{ s.name }}
-            </button>
-          </div>
-
-          <div
-            v-else-if="liturgy.saints.length > 4"
-            class="flex items-center gap-2 relative z-10"
-          >
-            <button
-              type="button"
-              @click="activeSaintIndex = (activeSaintIndex - 1 + liturgy.saints.length) % liturgy.saints.length"
-              class="w-9 h-9 rounded-[9999px] bg-[#eaf2f1] hover:bg-[#1b4d4f] text-[#1b4d4f] hover:text-white flex items-center justify-center smooth-transition cursor-pointer shrink-0"
-              aria-label="Santo anterior"
-            >
-              <span class="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-
-            <div class="relative flex-1 min-w-0">
-              <select
-                v-model.number="activeSaintIndex"
+            <div class="relative">
+              <button
+                type="button"
+                @click="isSaintDropdownOpen = !isSaintDropdownOpen"
+                :aria-expanded="isSaintDropdownOpen"
                 aria-label="Seleccionar santo del día"
-                class="w-full appearance-none bg-[#eaf2f1] border border-[#1b4d4f]/15 focus:border-[#1b4d4f] rounded-[9999px] pl-4 pr-9 py-2 font-headline text-[11px] font-extrabold uppercase tracking-wider text-[#1b4d4f] focus:outline-none cursor-pointer truncate"
+                class="w-full rounded-2xl bg-[#f4f8f7] hover:bg-[#eaf2f1] border border-[#1b4d4f]/15 px-3.5 py-2.5 flex items-center justify-between gap-2.5 smooth-transition cursor-pointer text-left shadow-xs"
               >
-                <option v-for="(s, sIdx) in liturgy.saints" :key="s.name" :value="sIdx">
-                  {{ sIdx + 1 }}/{{ liturgy.saints.length }} • {{ s.name }}
-                </option>
-              </select>
-              <span
-                class="material-symbols-outlined text-base text-[#1b4d4f] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              >
-                expand_more
-              </span>
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span
+                    class="px-2.5 py-1 rounded-[9999px] bg-[#1b4d4f] text-[#f3d078] font-headline text-[10px] font-extrabold tracking-wider shrink-0"
+                  >
+                    {{ activeSaintIndex + 1 }}/{{ liturgy.saints.length }}
+                  </span>
+                  <span class="font-headline text-xs font-extrabold uppercase tracking-wide text-[#1b4d4f] truncate">
+                    {{ currentSaint.name }}
+                  </span>
+                </div>
+                <span
+                  :class="[
+                    'material-symbols-outlined text-lg text-[#1b4d4f] shrink-0 smooth-transition',
+                    isSaintDropdownOpen ? 'rotate-180' : ''
+                  ]"
+                >
+                  expand_more
+                </span>
+              </button>
+
+              <!-- Custom Rounded Floating List -->
+              <transition name="fade">
+                <div
+                  v-if="isSaintDropdownOpen"
+                  class="absolute inset-x-0 top-full mt-2 z-30 bg-white rounded-2xl shadow-2xl shadow-[#1b4d4f]/15 border border-[#1b4d4f]/15 p-1.5 max-h-60 overflow-y-auto space-y-1"
+                >
+                  <button
+                    v-for="(s, sIdx) in liturgy.saints"
+                    :key="s.name"
+                    type="button"
+                    @click="selectSaint(sIdx)"
+                    :class="[
+                      'w-full rounded-xl px-3 py-2.5 flex items-center justify-between gap-2.5 text-left smooth-transition cursor-pointer',
+                      activeSaintIndex === sIdx
+                        ? 'bg-[#1b4d4f] text-white shadow-sm'
+                        : 'text-[#1b4d4f] hover:bg-[#eaf2f1]'
+                    ]"
+                  >
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span
+                        :class="[
+                          'w-6 h-6 rounded-[9999px] flex items-center justify-center font-headline text-[10px] font-extrabold shrink-0',
+                          activeSaintIndex === sIdx
+                            ? 'bg-[#d49e35] text-[#102e30]'
+                            : 'bg-[#eaf2f1] text-[#007681]'
+                        ]"
+                      >
+                        {{ sIdx + 1 }}
+                      </span>
+                      <span class="font-headline text-xs font-bold leading-snug">
+                        {{ s.name }}
+                      </span>
+                    </div>
+                    <span
+                      v-if="activeSaintIndex === sIdx"
+                      class="material-symbols-outlined text-base text-[#f3d078] shrink-0"
+                    >
+                      check
+                    </span>
+                  </button>
+                </div>
+              </transition>
             </div>
 
-            <button
-              type="button"
-              @click="activeSaintIndex = (activeSaintIndex + 1) % liturgy.saints.length"
-              class="w-9 h-9 rounded-[9999px] bg-[#eaf2f1] hover:bg-[#1b4d4f] text-[#1b4d4f] hover:text-white flex items-center justify-center smooth-transition cursor-pointer shrink-0"
-              aria-label="Siguiente santo"
+            <!-- Subtle Quick-Dot Indicators (for up to 8 saints) -->
+            <div
+              v-if="liturgy.saints.length <= 8"
+              class="flex items-center justify-center gap-1.5"
             >
-              <span class="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
+              <button
+                v-for="(s, sIdx) in liturgy.saints"
+                :key="`dot-${s.name}`"
+                type="button"
+                @click="selectSaint(sIdx)"
+                :aria-label="`Ver ${s.name}`"
+                :class="[
+                  'h-1.5 rounded-[9999px] smooth-transition cursor-pointer',
+                  activeSaintIndex === sIdx
+                    ? 'w-6 bg-[#1b4d4f]'
+                    : 'w-1.5 bg-[#1b4d4f]/25 hover:bg-[#1b4d4f]/50'
+                ]"
+              ></button>
+            </div>
           </div>
 
           <!-- Saint Portrait or Fallback Sacred Banner (Full uncropped portrait) -->
@@ -615,12 +675,13 @@ const toggleAudio = () => {
     </div>
 
     <!-- Saint Biography Modal -->
-    <transition name="fade">
-      <div
-        v-if="showSaintModal && currentSaint"
-        @click.self="showSaintModal = false"
-        class="fixed inset-0 z-50 bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4"
-      >
+    <Teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="showSaintModal && currentSaint"
+          @click.self="showSaintModal = false"
+          class="fixed inset-0 z-[90] bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4 font-jakarta"
+        >
         <div
           class="bg-white rounded-3xl max-w-xl w-full max-h-[85vh] overflow-y-auto p-7 sm:p-9 shadow-2xl border border-[#1b4d4f]/15 space-y-5"
         >
@@ -675,7 +736,8 @@ const toggleAudio = () => {
           </button>
         </div>
       </div>
-    </transition>
+      </transition>
+    </Teleport>
   </section>
 </template>
 

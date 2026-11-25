@@ -512,14 +512,15 @@ onUnmounted(() => {
     </section>
 
     <!-- Portrait & Personal Story Modal -->
-    <transition name="fade">
-      <div
-        v-if="selectedMember"
-        @click.self="selectedMember = null"
-        role="dialog"
-        aria-modal="true"
-        class="fixed inset-0 z-[85] bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-      >
+    <Teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="selectedMember"
+          @click.self="selectedMember = null"
+          role="dialog"
+          aria-modal="true"
+          class="fixed inset-0 z-[90] bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 font-jakarta"
+        >
         <div
           :class="[
             'bg-white rounded-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-[#1b4d4f]/15 relative flex flex-col',
@@ -709,7 +710,8 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-    </transition>
+      </transition>
+    </Teleport>
 
     <!-- Call to Action Banner -->
     <section class="max-w-7xl mx-auto px-6 lg:px-12 py-14 pb-20">

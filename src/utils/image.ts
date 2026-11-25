@@ -75,3 +75,17 @@ export function getTomorrowStart(): Date {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
 }
+
+/**
+ * Returns true only for events with published status ("published" / "publicado").
+ * Allows items if the backend already filtered and omitted status/is_published.
+ */
+export function isPublishedEvent(item: any): boolean {
+  if (!item || typeof item !== 'object') return false
+  if (typeof item.is_published === 'boolean') return item.is_published
+  if (item.status !== undefined && item.status !== null && String(item.status).trim() !== '') {
+    const normalized = String(item.status).trim().toLowerCase()
+    return normalized === 'published' || normalized === 'publicado'
+  }
+  return true
+}

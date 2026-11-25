@@ -371,12 +371,13 @@ onMounted(() => {
     </section>
 
     <!-- Reflection Reader Modal -->
-    <transition name="fade">
-      <div
-        v-if="activeArticle"
-        @click.self="activeArticle = null"
-        class="fixed inset-0 z-[85] bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4"
-      >
+    <Teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="activeArticle"
+          @click.self="activeArticle = null"
+          class="fixed inset-0 z-[90] bg-[#002021]/75 backdrop-blur-sm flex items-center justify-center p-4 font-jakarta"
+        >
         <div
           class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-hidden shadow-2xl border border-[#1b4d4f]/15 flex flex-col"
         >
@@ -460,7 +461,8 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </transition>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
